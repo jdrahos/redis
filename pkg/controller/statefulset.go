@@ -47,6 +47,8 @@ const (
 	CONFIG_MOUNT_PATH = "/usr/local/etc/redis/"
 )
 
+var ErrStsNotReady = fmt.Errorf("statefulSet is not updated yet")
+
 func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (kutil.VerbType, error) {
 	err := c.checkStatefulSet(db, statefulSetName)
 	if err != nil {
@@ -66,8 +68,8 @@ func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, re
 
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
-		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			return kutil.VerbUnchanged, errors.Wrap(err, "Failed to CreateOrPatch StatefulSet")
+		if !app_util.IsStatefulSetReady(statefulSet) {
+			return "", ErrStsNotReady
 		}
 
 		c.Recorder.Eventf(
@@ -583,16 +585,6 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	)
 
 	return sts
-}
-
-func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
-	return core_util.WaitUntilPodRunningBySelector(
-		context.TODO(),
-		c.Client,
-		statefulSet.Namespace,
-		statefulSet.Spec.Selector,
-		int(types.Int32(statefulSet.Spec.Replicas)),
-	)
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec

@@ -5,6 +5,8 @@ go 1.12
 require (
 	github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
+	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/jetstack/cert-manager v0.16.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
